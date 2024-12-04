@@ -1,83 +1,81 @@
 pipeline {
-    agent any
 
-    environment {
-        AWS_REGION        = 'ap-south-1' // Replace with your AWS region
-        TF_BACKEND_BUCKET = 'my-terraformeks-state-bucket'
-        TF_BACKEND_KEY    = 'terraform/eks-cluster/terraform.tfstate'
+	agent any
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '3', artifactNumToKeepStr: '3'))
+    }
+
+    tools {
+        maven 'maven_3.9.4'
     }
 
     stages {
-        stage('Checkout Code') {
+        stage('Code Compilation') {
             steps {
-                // Pull the latest Terraform code from the repository
-                checkout scm
+                echo 'Code Compilation is In Progress!'
+                sh 'mvn clean compile'
+                echo 'Code Compilation is Completed Successfully!'
             }
         }
-
-        stage('Setup Terraform Backend') {
+        stage('Code QA Execution') {
             steps {
-                script {
-                    // Create a backend.tf file dynamically
-                    writeFile file: 'backend.tf', text: """
-                    terraform {
-                      backend "s3" {
-                        bucket = "${TF_BACKEND_BUCKET}"
-                        key    = "${TF_BACKEND_KEY}"
-                        region = "${AWS_REGION}"
-                      }
-                    }
-                    """
-                }
+                echo 'JUnit Test Case Check in Progress!'
+                sh 'mvn clean test'
+                echo 'JUnit Test Case Check Completed!'
             }
         }
-
-        stage('Initialize Terraform') {
+        stage('Code Package') {
             steps {
-                script {
-                    sh 'terraform init'
-                }
+                echo 'Creating WAR Artifact'
+                sh 'mvn clean package'
+                echo 'Artifact Creation Completed'
             }
         }
-
-        stage('Plan Infrastructure') {
+        stage('Building & Tag Docker Image') {
             steps {
-                script {
-                    // Execute Terraform plan and output the details
-                    sh 'terraform plan -var-file="terraform.tfvars"'
-                }
+                echo "Starting Building Docker Image"
+                sh "docker build -t satyam88/fusion-ms ."
+                sh "docker build -t fusion-ms ."
+                echo 'Docker Image Build Completed'
             }
         }
-
-        stage('Apply Infrastructure') {
+        stage('Docker Image Scanning') {
             steps {
-                script {
-                    // Apply Terraform changes with confirmation
-                    sh 'terraform apply -var-file="terraform.tfvars" -auto-approve'
-                }
+                echo 'Docker Image Scanning Started'
+                sh 'docker --version'
+                echo 'Docker Image Scanning Started'
             }
         }
-
-        stage('Post Deployment Outputs') {
-            steps {
-                script {
-                    // Show the Terraform outputs
-                    sh 'terraform output'
-                }
+        stage(' Docker push to Docker Hub') {
+           steps {
+              script {
+                 withCredentials([string(credentialsId: 'dockerhubCred', variable: 'dockerhubCred')]){
+                 sh 'docker login docker.io -u satyam88 -p ${dockerhubCred}'
+                 echo "Push Docker Image to DockerHub : In Progress"
+                 sh 'docker push satyam88/fusion-ms:latest'
+                 echo "Push Docker Image to DockerHub : In Progress"
+                 }
+              }
             }
         }
-    }
-
-    post {
-        always {
-            echo "Cleaning up workspace."
-            cleanWs()
-        }
-        success {
-            echo "Terraform deployment successful!"
-        }
-        failure {
-            echo "Terraform deployment failed. Check logs for details."
+        stage(' Docker Image Push to Amazon ECR') {
+           steps {
+              script {
+                 withDockerRegistry([credentialsId:'ecr:ap-south-1:ecr-credentials', url:"https://533267238276.dkr.ecr.ap-south-1.amazonaws.com"]){
+                 sh """
+                 echo "List the docker images present in local"
+                 docker images
+                 echo "Tagging the Docker Image: In Progress"
+                 docker tag fusion-ms:latest 533267238276.dkr.ecr.ap-south-1.amazonaws.com/fusion-ms:latest
+                 echo "Tagging the Docker Image: Completed"
+                 echo "Push Docker Image to ECR : In Progress"
+                 docker push 533267238276.dkr.ecr.ap-south-1.amazonaws.com/fusion-ms:latest
+                 echo "Push Docker Image to ECR : Completed"
+                 """
+                 }
+              }
+           }
         }
     }
 }
