@@ -1,6 +1,6 @@
 aws_region         = "ap-south-1"
 cluster_name       = "eks-cluster-mumbai"
-k8s_version        = "1.31"
+k8s_version        = "1.30"
 node_instance_type = "t3.medium"
 node_count         = 2
 s3_bucket          = "my-terraformeks-state-bucket"
