@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        AWS_REGION        = 'ap-south-1' 
+        AWS_REGION        = 'ap-south-1' // Replace with your AWS region
         TF_BACKEND_BUCKET = 'my-terraformeks-state-bucket'
         TF_BACKEND_KEY    = 'terraform/eks-cluster/terraform.tfstate'
     }
@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                // Pull the latest Terraform code from the repo
+                // Pull the latest Terraform code from the repository
                 checkout scm
             }
         }
