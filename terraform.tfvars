@@ -6,3 +6,4 @@ node_count         = 2
 s3_bucket          = "my-terraformeks-state-bucket"
 s3_key             = "terraform/eks-cluster/terraform.tfstate"
 dynamodb_table     = "terraform-lock-table" 
+
