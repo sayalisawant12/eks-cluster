@@ -25,5 +25,4 @@ data "aws_ami" "eks_optimized" {
     values = ["x86_64"]
   }
 
-  owners = ["602401143452"] # Amazon EKS AMI owner ID
-
+  owners =
