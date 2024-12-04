@@ -6,8 +6,6 @@ pipeline {
         TF_BACKEND_BUCKET = 'my-terraformeks-state-bucket'
         TF_BACKEND_KEY    = 'terraform/eks-cluster/terraform.tfstate'
 
-        AWS_ACCESS_KEY_ID     = credentials('aws-access-key-id')
-        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
     }
 
     stages {
