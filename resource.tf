@@ -1,4 +1,4 @@
- # EKS Cluster
+# EKS Cluster
 resource "aws_eks_cluster" "eks" {
   name     = var.cluster_name
   version  = var.k8s_version
@@ -18,6 +18,8 @@ resource "aws_eks_node_group" "node_group" {
   
 
   scaling_config {
+ 
+
     desired_size = var.node_count
     max_size     = var.node_count + 1
     min_size     = 1
@@ -69,6 +71,7 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_policy_attachment" {
   role       = aws_iam_role.eks_cluster_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
 }
+ 
 
 # IAM Role for EKS Nodes
 resource "aws_iam_role" "eks_node_role" {
@@ -102,4 +105,4 @@ resource "aws_iam_role_policy_attachment" "ecr_read_only_policy_attachment" {
 resource "aws_iam_role_policy_attachment" "eks_cni_policy_attachment" {
   role       = aws_iam_role.eks_node_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-} 
+}  
