@@ -36,4 +36,4 @@ variable "s3_key" {
 variable "dynamodb_table" {
   description = "DynamoDB table for state locking"
   type        = string
-}
+

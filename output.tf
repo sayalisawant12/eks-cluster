@@ -12,4 +12,4 @@ output "cluster_arn" {
 
 output "node_ami_id" {
   value = data.aws_ami.eks_optimized.id
-} 
+
