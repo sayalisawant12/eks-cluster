@@ -5,13 +5,20 @@ pipeline {
         AWS_REGION        = 'ap-south-1'
         TF_BACKEND_BUCKET = 'my-terraformeks-state-bucket'
         TF_BACKEND_KEY    = 'terraform/eks-cluster/terraform.tfstate'
-
     }
 
     stages {
         stage('Checkout Code') {
             steps {
                 checkout scm
+            }
+        }
+
+        stage('Validate Terraform Configuration') {
+            steps {
+                script {
+                    sh 'terraform validate' // Validate files before init
+                }
             }
         }
 
