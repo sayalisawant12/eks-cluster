@@ -27,7 +27,7 @@ resource "aws_eks_node_group" "node_group" {
 
   launch_template {
     id = aws_launch_template.eks_nodes.id
-    version = "$Latest"
+    version = "Latest"
     #instance_types = [var.node_instance_type]
   }
 }
